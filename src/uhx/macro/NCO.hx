@@ -79,9 +79,8 @@ class NCO {
 			case macro $e1 || $e2 if (unify( e1, e2, variables )):
 				trace( e1, e2 );
 				
-				e1.iter( process.bind( _, variables ) );
-				e2.iter( process.bind( _, variables ) );
-				expr.expr = (macro $e1 == null ? $e2 : $e1).expr;
+				expr.expr = (macro ($e1 == null) ? $e2 : $e1).expr;
+				expr.iter( process.bind( _, variables ) );
 				
 			case _:
 				trace( expr );

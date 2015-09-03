@@ -19,6 +19,8 @@ class Main implements Klas {
 		
 		trace( s1 );
 		trace( 1, 2, s || 'failed', 3, 4 );
+		
+		trace( s || s1 || 'third' || 'final' );
 	}
 	
 }

@@ -7,6 +7,7 @@ import haxe.ds.StringMap;
 import haxe.macro.Context;
 
 using haxe.macro.Tools;
+using haxe.macro.Context;
 
 /**
  * ...
@@ -43,6 +44,7 @@ class NCO {
 			case FFun(method) if (method.expr != null):
 				method.expr.iter( process.bind( _, new StringMap() ) );
 				trace( printer.printField( field ) );
+				
 			case _:
 				
 				
@@ -74,8 +76,9 @@ class NCO {
 				//trace( name, value, Context.typeof( value ) );
 				//value.iter( process.bind( _, variables ) );
 				
-			case macro $e1 || $e2:
+			case macro $e1 || $e2 if (unify( e1, e2, variables )):
 				trace( e1, e2 );
+				
 				e1.iter( process.bind( _, variables ) );
 				e2.iter( process.bind( _, variables ) );
 				expr.expr = (macro $e1 == null ? $e2 : $e1).expr;
@@ -85,6 +88,40 @@ class NCO {
 				expr.iter( process.bind( _, variables ) );
 				
 		}
+	}
+	
+	private static function typeof(expr:Expr, variables:StringMap<ComplexType>):Null<ComplexType> {
+		var result = null;
+		
+		try {
+			result = Context.typeof( expr ).toComplexType();
+			
+		} catch (e:Dynamic) switch (expr.expr) {
+			case EConst(CIdent( name )) if(variables.exists( name )):
+				result = variables.get( name );
+				
+			case EConst(CString(_)):
+				result = macro:String;
+				
+			case EConst(CInt(_)):
+				result = macro:Int;
+				
+			case EConst(CFloat(_)):
+				result = macro:Float;
+				
+			case EConst(CRegexp(_, _)):
+				result = macro:EReg;
+				
+			case _:
+				expr.iter( function(v) result = typeof.bind(_, variables)(v) );
+				
+		}
+		
+		return result == null ? macro:Null<Dynamic> : result;
+	}
+	
+	private static function unify(expr1:Expr, expr2:Expr, variables:StringMap<ComplexType>):Bool {
+		return typeof( expr1, variables ).toType().unify( typeof( expr2, variables ).toType() );
 	}
 	
 }

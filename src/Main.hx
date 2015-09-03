@@ -18,6 +18,7 @@ class Main implements Klas {
 		s1 = s || 'hello again world';
 		
 		trace( s1 );
+		trace( 1, 2, s || 'failed', 3, 4 );
 	}
 	
 }

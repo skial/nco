@@ -77,9 +77,17 @@ class NCO {
 				//value.iter( process.bind( _, variables ) );
 				
 			case macro $e1 || $e2 if (unify( e1, e2, variables )):
-				trace( e1, e2 );
+				//trace( e1, e2 );
 				
-				expr.expr = (macro ($e1 == null) ? $e2 : $e1).expr;
+				switch (e1.expr) {
+					case EConst(CIdent('null')):
+						expr.expr = (macro $e2).expr;
+						
+					case _:
+						expr.expr = (macro ($e1 == null) ? $e2 : $e1).expr;
+						
+				}
+				
 				expr.iter( process.bind( _, variables ) );
 				
 			case _:

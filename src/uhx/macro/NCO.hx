@@ -71,7 +71,7 @@ class NCO {
 				// Process variable expressions
 				for (v in vars) if (v.expr != null) process( v.expr, variables );
 				
-			case macro $e1 || $e2 if (unify( e1, e2, variables )):
+			case macro $e1 || $e2 if (!isBool( e1, e2, variables ) && unify( e1, e2, variables )):
 				expr.expr = (macro ($e1 == null) ? $e2 : $e1).expr;
 				expr.iter( process.bind( _, variables ) );
 				
@@ -109,6 +109,16 @@ class NCO {
 		}
 		
 		return result == null ? macro:Null<Dynamic> : result;
+	}
+	
+	private static function isBool(expr1:Expr, expr2:Expr, variables:StringMap<ComplexType>):Bool {
+		var t1 = typeof( expr1, variables );
+		var t2 = typeof( expr2, variables );
+		return 
+			(t1.match( TPath( { sub:'Bool' } ) ) || t2.match( TPath( { sub:'Bool' } ) ))
+			||
+			(t1.match( TPath( { name:'Bool' } ) ) || t2.match( TPath( { name:'Bool' } ) ));
+			
 	}
 	
 	private static function unify(expr1:Expr, expr2:Expr, variables:StringMap<ComplexType>):Bool {

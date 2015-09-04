@@ -22,13 +22,17 @@ class NCO {
 		} catch (e:Dynamic) {
 			// This assumes that `implements Klas` is not being used
 			// but `@:autoBuild` or `@:build` metadata is being used 
-			// with the provided `your.macro.Class.build()` method.
+			// with the provided `uhx.macro.NCO.build()` method.
 			
 		}
 	}
 	
 	private static var printer = new Printer();
 	
+	/**
+	 * Manual entry point for `@:autoBuild` and `@:build`
+	 * metadata, for those not using Klas.
+	 */
 	public static function build():Array<Field> {
 		var cls = Context.getLocalClass().get();
 		var fields = Context.getBuildFields();
@@ -81,6 +85,11 @@ class NCO {
 		}
 	}
 	
+	/**
+	 * Get the type of the passed `expr` as a `ComplexType`.
+	 * First try to use the Compilers built-in `Context.typeof`, but if
+	 * it fails, fall back to working it ourselfs.
+	 */
 	private static function typeof(expr:Expr, variables:StringMap<ComplexType>):Null<ComplexType> {
 		var result = null;
 		
@@ -111,6 +120,11 @@ class NCO {
 		return result == null ? macro:Null<Dynamic> : result;
 	}
 	
+	/**
+	 * Checks for compiler typed Booleans and macro typed Booleans.
+	 * 	- Compilers typed Booleans are `TPath({name:'StdTypes', sub:'Bool'})`
+	 * 	- Macro typed Booleans are `TPath({name:'Bool'})`
+	 */
 	private static function isBool(expr1:Expr, expr2:Expr, variables:StringMap<ComplexType>):Bool {
 		var t1 = typeof( expr1, variables );
 		var t2 = typeof( expr2, variables );

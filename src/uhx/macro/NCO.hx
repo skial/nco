@@ -1,13 +1,12 @@
 package uhx.macro;
 
-import haxe.macro.Printer;
 import haxe.macro.Type;
 import haxe.macro.Expr;
 import haxe.ds.StringMap;
+import haxe.macro.Printer;
 import haxe.macro.Context;
 
 using haxe.macro.Tools;
-using haxe.macro.Context;
 
 /**
  * ...
@@ -68,30 +67,15 @@ class NCO {
 					
 				}
 				
-				trace( [for (k in variables.keys()) k] );
+				//trace( [for (k in variables.keys()) k] );
 				// Process variable expressions
 				for (v in vars) if (v.expr != null) process( v.expr, variables );
 				
-			//case macro $name = $value /*if(variables.exists( printer.printExpr( name ) ))*/:
-				//trace( name, value, Context.typeof( value ) );
-				//value.iter( process.bind( _, variables ) );
-				
 			case macro $e1 || $e2 if (unify( e1, e2, variables )):
-				//trace( e1, e2 );
-				
-				switch (e1.expr) {
-					case EConst(CIdent('null')):
-						expr.expr = (macro $e2).expr;
-						
-					case _:
-						expr.expr = (macro ($e1 == null) ? $e2 : $e1).expr;
-						
-				}
-				
+				expr.expr = (macro ($e1 == null) ? $e2 : $e1).expr;
 				expr.iter( process.bind( _, variables ) );
 				
 			case _:
-				trace( expr );
 				expr.iter( process.bind( _, variables ) );
 				
 		}

@@ -52,7 +52,7 @@ class NCO {
 		switch (field.kind) {
 			case FFun(method) if (method.expr != null):
 				method.expr.iter( function(e, v) { e.expr = process( e, v ).expr; } .bind(_, new StringMap()) );
-				//trace( printer.printField( field ) );
+				trace( printer.printField( field ) );
 				
 			case _:
 				
@@ -84,7 +84,6 @@ class NCO {
 				for (v in vars) if (v.expr != null) v.expr.expr = process( v.expr, variables ).expr;
 				
 			case macro $e1 || $e2 if (!isBool( e1, e2, variables ) && unify( e1, e2, variables )):
-				e1.expr = process( e1, variables ).expr;
 				expr.expr = (macro ($e1 == null) ? $e2 : $e1).expr;
 				
 			case _:

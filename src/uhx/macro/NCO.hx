@@ -6,6 +6,10 @@ import haxe.ds.StringMap;
 import haxe.macro.Printer;
 import haxe.macro.Context;
 
+#if klas
+import uhx.macro.KlasImp;
+#end
+
 using haxe.macro.Tools;
 using haxe.macro.Context;
 
@@ -17,8 +21,10 @@ class NCO {
 
 	public static function initialize() {
 		try {
+			#if klas
 			KlasImp.initialize();
 			KlasImp.inlineMetadata.add( ~/.+\|\|.+/, NCO.handler );
+			#end
 			
 		} catch (e:Dynamic) {
 			// This assumes that `implements Klas` is not being used

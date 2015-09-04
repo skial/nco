@@ -1,0 +1,12 @@
+-lib klas
+-cp src
+-main Main
+--macro uhx.macro.NCO.initialize()
+
+--each
+
+-neko bin/nco.n
+
+--next
+
+-js bin/nco.js

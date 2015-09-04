@@ -7,6 +7,7 @@ import haxe.macro.Printer;
 import haxe.macro.Context;
 
 using haxe.macro.Tools;
+using haxe.macro.Context;
 
 /**
  * ...
@@ -29,6 +30,11 @@ class NCO {
 	
 	private static var printer = new Printer();
 	
+	public static macro function or(expression:Expr):Expr {
+		expression.expr = process(expression, new StringMap()).expr;
+		return expression;
+	}
+	
 	/**
 	 * Manual entry point for `@:autoBuild` and `@:build`
 	 * metadata, for those not using Klas.
@@ -45,8 +51,8 @@ class NCO {
 	public static function handler(cls:ClassType, field:Field):Field {
 		switch (field.kind) {
 			case FFun(method) if (method.expr != null):
-				method.expr.iter( process.bind( _, new StringMap() ) );
-				trace( printer.printField( field ) );
+				method.expr.iter( function(e, v) { e.expr = process( e, v ).expr; } .bind(_, new StringMap()) );
+				//trace( printer.printField( field ) );
 				
 			case _:
 				
@@ -56,16 +62,18 @@ class NCO {
 		return field;
 	}
 	
-	private static function process(expr:Expr, variables:StringMap<ComplexType>) {
+	private static function process(expr:Expr, variables:StringMap<ComplexType>):Expr {
+		var result = expr;
+		
 		switch (expr) {
 			case { expr:EVars(vars), pos:_ } :
-				// Collect and store variable info
+				// Collect and store variable types.
 				for (v in vars) {
 					if (!variables.exists( v.name )) {
-						variables.set( v.name, v.type );
+						variables.set( v.name, (v.type != null) ? v.type : (v.expr != null) ? typeof(v.expr, variables) : null );
 						
 					} else if (variables.get( v.name ) == null) {
-						variables.set( v.name, v.type );
+						variables.set( v.name, (v.type != null) ? v.type : (v.expr != null) ? typeof(v.expr, variables) : null );
 						
 					}
 					
@@ -73,16 +81,20 @@ class NCO {
 				
 				//trace( [for (k in variables.keys()) k] );
 				// Process variable expressions
-				for (v in vars) if (v.expr != null) process( v.expr, variables );
+				for (v in vars) if (v.expr != null) v.expr.expr = process( v.expr, variables ).expr;
 				
 			case macro $e1 || $e2 if (!isBool( e1, e2, variables ) && unify( e1, e2, variables )):
+				e1.expr = process( e1, variables ).expr;
 				expr.expr = (macro ($e1 == null) ? $e2 : $e1).expr;
-				expr.iter( process.bind( _, variables ) );
 				
 			case _:
-				expr.iter( process.bind( _, variables ) );
+				
 				
 		}
+		
+		expr.iter( function(e) e.expr = process( e, variables ).expr );
+		
+		return result;
 	}
 	
 	/**
@@ -97,7 +109,7 @@ class NCO {
 			result = Context.typeof( expr ).toComplexType();
 			
 		} catch (e:Dynamic) switch (expr.expr) {
-			case EConst(CIdent( name )) if(variables.exists( name )):
+			case EConst(CIdent( name )) if (variables.exists( name )):
 				result = variables.get( name );
 				
 			case EConst(CString(_)):

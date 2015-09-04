@@ -23,6 +23,12 @@ class Main implements Klas {
 		trace( s || s1 || 'third' || 'final' );
 		trace( false || false || true || false );
 		trace( null || null || 'third' || 'final' );
+		
+		var s2 = null || null || 'silly';
+		trace( s2 );
+		var a = true;
+		var b = false;
+		trace( b || a );
 	}
 	
 }
